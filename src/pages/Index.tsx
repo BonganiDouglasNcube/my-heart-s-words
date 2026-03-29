@@ -1,16 +1,53 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useEffect } from "react";
+import { AnimatePresence } from "framer-motion";
+import { LoadingScreen } from "@/components/LoadingScreen";
+import { HeroSection } from "@/components/HeroSection";
+import { StorySection } from "@/components/StorySection";
+import { ConfessionSection } from "@/components/ConfessionSection";
+import { ResultScreen } from "@/components/ResultScreen";
+import { FloatingElements } from "@/components/FloatingElements";
+import { MusicToggle } from "@/components/MusicToggle";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+type Screen = "loading" | "hero" | "story" | "confession" | "result";
+type Response = "yes" | "time" | "no";
+
+const Index = () => {
+  const [screen, setScreen] = useState<Screen>("loading");
+  const [response, setResponse] = useState<Response | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setScreen("hero"), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleResponse = (r: Response) => {
+    setResponse(r);
+    setScreen("result");
+  };
+
+  const handleRestart = () => {
+    setResponse(null);
+    setScreen("hero");
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="min-h-screen romantic-gradient-bg relative overflow-hidden">
+      <MusicToggle />
+      {screen !== "loading" && (
+        <FloatingElements intensity={screen === "result" && response === "yes" ? "celebration" : "subtle"} />
+      )}
+
+      <AnimatePresence mode="wait">
+        {screen === "loading" && <LoadingScreen key="loading" />}
+        {screen === "hero" && <HeroSection key="hero" onContinue={() => setScreen("story")} />}
+        {screen === "story" && <StorySection key="story" onContinue={() => setScreen("confession")} />}
+        {screen === "confession" && <ConfessionSection key="confession" onResponse={handleResponse} />}
+        {screen === "result" && response && (
+          <ResultScreen key="result" response={response} onRestart={handleRestart} />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
